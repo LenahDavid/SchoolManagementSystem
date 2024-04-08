@@ -35,10 +35,10 @@ public enum Role {
             TEACHER_UPDATE,
             TEACHER_DELETE,
 
-            USER_READ,
-            USER_UPDATE,
-            USER_DELETE,
-            USER_CREATE
+            STUDENT_READ,
+            STUDENT_UPDATE,
+            STUDENT_DELETE,
+            STUDENT_CREATE
     )),
     HEADTEACHER(Set.of(
             HEADTEACHER_CREATE,
@@ -51,10 +51,10 @@ public enum Role {
             TEACHER_UPDATE,
             TEACHER_DELETE,
 
-            USER_READ,
-            USER_UPDATE,
-            USER_DELETE,
-            USER_CREATE
+            STUDENT_READ,
+            STUDENT_UPDATE,
+            STUDENT_DELETE,
+            STUDENT_CREATE
     )),
     TEACHER(Set.of(
             TEACHER_CREATE,
@@ -62,16 +62,16 @@ public enum Role {
             TEACHER_UPDATE,
             TEACHER_DELETE,
 
-            USER_READ,
-            USER_UPDATE,
-            USER_DELETE,
-            USER_CREATE
+            STUDENT_READ,
+            STUDENT_UPDATE,
+            STUDENT_DELETE,
+            STUDENT_CREATE
     )),
-    USER(Set.of(
-            USER_READ,
-            USER_UPDATE,
-            USER_DELETE,
-            USER_CREATE
+    STUDENT(Set.of(
+            STUDENT_READ,
+            STUDENT_UPDATE,
+            STUDENT_DELETE,
+            STUDENT_CREATE
     ));
 
     private final Set<Permission> permissions;

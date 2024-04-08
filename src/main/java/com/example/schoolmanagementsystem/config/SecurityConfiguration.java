@@ -52,11 +52,11 @@ UserService userService;
                         .requestMatchers(PUT,"api/v1/teacher/**").hasAnyAuthority(ADMIN_UPDATE.name(),HEADTEACHER_UPDATE.name(),TEACHER_UPDATE.name())
                         .requestMatchers(DELETE,"api/v1/teacher/**").hasAnyAuthority(ADMIN_DELETE.name(),HEADTEACHER_DELETE.name(),TEACHER_DELETE.name())
 
-                        .requestMatchers("api/v1/user/**").hasAnyRole(ADMIN.name(),HEADTEACHER.name(),TEACHER.name(),USER.name())
-                        .requestMatchers(GET,"api/v1/user/**").hasAnyAuthority(ADMIN_READ.name(),HEADTEACHER_READ.name(),TEACHER_READ.name(),USER_READ.name())
-                        .requestMatchers(POST,"api/v1/user/**").hasAnyAuthority(ADMIN_CREATE.name(),HEADTEACHER_CREATE.name(),TEACHER_CREATE.name(),USER_CREATE.name())
-                        .requestMatchers(PUT,"api/v1/user/**").hasAnyAuthority(ADMIN_UPDATE.name(),HEADTEACHER_UPDATE.name(),TEACHER_UPDATE.name(),USER_UPDATE.name())
-                        .requestMatchers(DELETE,"api/v1/user/**").hasAnyAuthority(ADMIN_DELETE.name(),HEADTEACHER_DELETE.name(),TEACHER_DELETE.name(),USER_DELETE.name())
+                        .requestMatchers("api/v1/user/**").hasAnyRole(ADMIN.name(),HEADTEACHER.name(),TEACHER.name(),STUDENT.name())
+                        .requestMatchers(GET,"api/v1/user/**").hasAnyAuthority(ADMIN_READ.name(),HEADTEACHER_READ.name(),TEACHER_READ.name(),STUDENT.name())
+                        .requestMatchers(POST,"api/v1/user/**").hasAnyAuthority(ADMIN_CREATE.name(),HEADTEACHER_CREATE.name(),TEACHER_CREATE.name(),STUDENT.name())
+                        .requestMatchers(PUT,"api/v1/user/**").hasAnyAuthority(ADMIN_UPDATE.name(),HEADTEACHER_UPDATE.name(),TEACHER_UPDATE.name(),STUDENT.name())
+                        .requestMatchers(DELETE,"api/v1/user/**").hasAnyAuthority(ADMIN_DELETE.name(),HEADTEACHER_DELETE.name(),TEACHER_DELETE.name(),STUDENT.name())
 
                         .requestMatchers("api/v1/admin/**").hasRole(ADMIN.name())
                         .requestMatchers(GET,"api/v1/admin/**").hasAuthority(ADMIN_READ.name())

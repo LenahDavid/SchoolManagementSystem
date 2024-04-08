@@ -34,7 +34,7 @@ public class UserController {
             return ResponseEntity.badRequest().body(null); // Return bad request status if passwords don't match
         }
 
-        User newUser = userService.signup(signUpRequest);
+        User newUser = userService.signup(signUpRequest); // Pass SignUpRequest and role
         return ResponseEntity.ok(newUser);
     }
     //    signing in a user

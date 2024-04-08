@@ -29,7 +29,7 @@ public class User implements UserDetails {
     @Serial
     private static final long serialVersionUID = -3546862197939974800L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "student_id")
     private Long id;
     @Column(name = "first_name")

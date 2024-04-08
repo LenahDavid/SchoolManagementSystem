@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User signup(SignUpRequest signUpRequest) {
+    public User signup(SignUpRequest signUpRequest ){
 
         // Check if the password meets the requirements
         String password = signUpRequest.getPassword();
@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
         user.setLastName(signUpRequest.getLastName());
         user.setEmail((signUpRequest.getEmail()));
         user.setUsername(signUpRequest.getUsername());
-        user.setRole(Role.USER);
+        user.setRole(Role.valueOf(signUpRequest.getRole()));
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
         return  userRepository.save(user);

@@ -10,10 +10,10 @@ import lombok.RequiredArgsConstructor;
 //@Data
 public enum Permission {
 
-    USER_READ("student:read"),
-    USER_CREATE("student:create"),
-    USER_UPDATE("student:update"),
-    USER_DELETE("student:delete"),
+    STUDENT_READ("student:read"),
+    STUDENT_CREATE("student:create"),
+    STUDENT_UPDATE("student:update"),
+    STUDENT_DELETE("student:delete"),
 
     TEACHER_READ("teacher:read"),
     TEACHER_CREATE("teacher:create"),
