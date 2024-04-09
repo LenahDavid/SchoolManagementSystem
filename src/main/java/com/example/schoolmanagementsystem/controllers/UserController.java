@@ -4,8 +4,7 @@ import com.example.schoolmanagementsystem.dto.ForgotPasswordRequest;
 import com.example.schoolmanagementsystem.dto.SignInRequest;
 import com.example.schoolmanagementsystem.dto.SignUpRequest;
 import com.example.schoolmanagementsystem.entity.User;
-import com.example.schoolmanagementsystem.exceptions.EmailNotFoundException;
-import com.example.schoolmanagementsystem.exceptions.UserNotFoundException;
+import com.example.schoolmanagementsystem.exceptions.*;
 import com.example.schoolmanagementsystem.service.EmailSenderService;
 import com.example.schoolmanagementsystem.service.UserService;
 
@@ -28,15 +27,22 @@ public class UserController {
     EmailSenderService emailSenderService;
     //    signing up a user
     @PostMapping("/api/v1/auth/signup")
-    public ResponseEntity<User> signup(@RequestBody SignUpRequest signUpRequest) {
-        // Check if the password and confirmed password match
-        if (!signUpRequest.getPassword().equals(signUpRequest.getConfirmPassword())) {
-            return ResponseEntity.badRequest().body(null); // Return bad request status if passwords don't match
+    public ResponseEntity<?> signup(@RequestBody SignUpRequest signUpRequest) {
+        try {
+            User newUser = userService.signup(signUpRequest); // Pass SignUpRequest and role
+            return ResponseEntity.ok(newUser);
+        } catch (PasswordCheckingException ex) {
+            ApiError apiError = new ApiError(400, HttpStatus.BAD_REQUEST, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body(apiError);
+        } catch (PasswordDoesnotMatchException ex) {
+            ApiError apiError = new ApiError(400, HttpStatus.BAD_REQUEST, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body(apiError);
         }
-
-        User newUser = userService.signup(signUpRequest); // Pass SignUpRequest and role
-        return ResponseEntity.ok(newUser);
     }
+
+
+
+
     //    signing in a user
     @PostMapping("/api/v1/auth/signin")
     public ResponseEntity<String> signin(@RequestBody SignInRequest signInRequest) {
@@ -79,40 +85,42 @@ public class UserController {
 
         //    Getting of user by id
         @GetMapping("/api/v1/user/{id}")
-        public ResponseEntity<User> getUserById (@PathVariable Long id){
-            User user = userService.getUserById(id);
-            if (user != null) {
+        public ResponseEntity<?> getUserById(@PathVariable Long id) {
+            try {
+                User user = userService.getUserById(id);
                 return ResponseEntity.ok(user);
-            } else {
-                return ResponseEntity.notFound().build();
+            } catch (UserNotFoundException ex) {
+                ApiError apiError = new ApiError(404, HttpStatus.NOT_FOUND, ex.getMessage());
+                return ResponseEntity.ok(apiError);
             }
         }
 
         //    Updating of user by id
         @PutMapping("/api/v1/user/{id}")
-        public ResponseEntity<User> updateUser (@PathVariable Long id, @RequestBody User updateUser){
+        public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User updateUser) {
             // Ensure the id is set in the updateUser object
             updateUser.setId(id);
-
             // Call updateUser method and handle the response
             try {
                 User updatedUser = userService.updateUser(updateUser);
                 return ResponseEntity.ok(updatedUser);
-            } catch (UserNotFoundException e) {
-                return ResponseEntity.notFound().build();
+            } catch (IllegalArgumentException ex) {
+                ApiError apiError = new ApiError(400, HttpStatus.BAD_REQUEST, ex.getMessage());
+                return ResponseEntity.status(HttpStatus.OK).body(apiError);
+            } catch (UserNotFoundException ex) {
+                ApiError apiError = new ApiError(404, HttpStatus.NOT_FOUND, ex.getMessage());
+                return ResponseEntity.status(HttpStatus.OK).body(apiError);
             }
         }
-
-        //    Deleting of user by id
-        @DeleteMapping("/api/v1/user/{id}")
-        public ResponseEntity<?> deleteUserById (@PathVariable Long id){
-            try {
-                userService.deleteUserById(id);
-                return ResponseEntity.ok().build();
-            } catch (UserNotFoundException e) {
-                return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body(e.getMessage()); // Return the message from the exception
-            }
+    //    Deleting of user by id
+    @DeleteMapping("/api/v1/user/{id}")
+    public ResponseEntity<?> deleteUserById(@PathVariable Long id) {
+        try {
+            userService.deleteUserById(id);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException ex) {
+            ApiError apiError = new ApiError(404, HttpStatus.NOT_FOUND, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body(apiError);
         }
     }
+}

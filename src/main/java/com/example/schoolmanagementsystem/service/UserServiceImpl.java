@@ -4,6 +4,8 @@ import com.example.schoolmanagementsystem.dto.SignUpRequest;
 import com.example.schoolmanagementsystem.entity.PasswordResetToken;
 import com.example.schoolmanagementsystem.entity.Role;
 import com.example.schoolmanagementsystem.entity.User;
+import com.example.schoolmanagementsystem.exceptions.PasswordCheckingException;
+import com.example.schoolmanagementsystem.exceptions.PasswordDoesnotMatchException;
 import com.example.schoolmanagementsystem.exceptions.UserNotFoundException;
 import com.example.schoolmanagementsystem.repository.PasswordResetTokenRepository;
 import com.example.schoolmanagementsystem.repository.UserRepository;
@@ -45,12 +47,12 @@ public class UserServiceImpl implements UserService {
         // Check if the password meets the requirements
         String password = signUpRequest.getPassword();
         if (!isValidPassword(password)) {
-            throw new IllegalArgumentException("Password must be at least 8 characters long, contain at least one uppercase letter, and one special character.");
+            throw new PasswordCheckingException("Password must be at least 8 characters long, contain at least one uppercase letter, and one special character.");
         }
 
 
         if (!signUpRequest.getPassword().equals(signUpRequest.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password and confirmed password do not match");
+            throw new PasswordDoesnotMatchException("Password and confirmed password do not match");
         }
 
         User user= new User();
@@ -148,13 +150,13 @@ public class UserServiceImpl implements UserService {
         if (id == null) {
             throw new IllegalArgumentException("User ID cannot be null");
         }
-        User existingUser = userRepository.findById(id).orElse(null);
-        if (existingUser != null) {
+        Optional<User> existingUserOptional = userRepository.findById(id);
+        if (existingUserOptional.isPresent()) {
+            User existingUser = existingUserOptional.get();
             existingUser.setUsername(updatedUser.getUsername());
             existingUser.setFirstName(updatedUser.getFirstName());
             existingUser.setEmail(updatedUser.getEmail());
             existingUser.setLastName(updatedUser.getLastName());
-
             // Update other fields as needed
             return userRepository.save(existingUser);
         } else {
@@ -164,14 +166,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUserById(Long id) {
-        User existingUser = userRepository.findById(id).orElse(null);
-        if (existingUser != null) {
+        Optional<User> existingUserOptional = userRepository.findById(id);
+        if (existingUserOptional.isPresent()) {
             userRepository.deleteById(id);
         } else {
             throw new UserNotFoundException("User with id " + id + " not found");
         }
     }
-
 
     public UserDetailsService userDetailsService(){
         return  new UserDetailsService() {
