@@ -37,10 +37,11 @@ public class UserController {
         } catch (PasswordDoesnotMatchException ex) {
             ApiError apiError = new ApiError(400, HttpStatus.BAD_REQUEST, ex.getMessage());
             return ResponseEntity.status(HttpStatus.OK).body(apiError);
+        } catch (EmailAlreadyExistsException ex) {
+            ApiError apiError = new ApiError(400, HttpStatus.BAD_REQUEST, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body(apiError);
         }
     }
-
-
 
 
     //    signing in a user
@@ -58,7 +59,7 @@ public class UserController {
 
     // Forgot password endpoint
     @PostMapping("/api/v1/auth/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         String email = forgotPasswordRequest.getEmail();
         // Check if the email exists in the database
         User user = userService.findByEmail(email);
@@ -68,8 +69,9 @@ public class UserController {
             emailSenderService.sendEmail(user.getEmail(), "Password Reset", "Use this link to reset your password: /reset-password?token=" + resetToken);
             return ResponseEntity.ok("Password reset link sent to your email.");
         } else {
-            // Throw EmailNotFoundException if the email doesn't exist in the database
-            throw new EmailNotFoundException("Email not found.");
+            // Return 200 OK with error details in the response body
+            ApiError apiError = new ApiError(404, HttpStatus.NOT_FOUND, "Email not found.");
+            return ResponseEntity.status(HttpStatus.OK).body(apiError);
         }
     }
         //Getting all users
@@ -91,7 +93,7 @@ public class UserController {
                 return ResponseEntity.ok(user);
             } catch (UserNotFoundException ex) {
                 ApiError apiError = new ApiError(404, HttpStatus.NOT_FOUND, ex.getMessage());
-                return ResponseEntity.ok(apiError);
+                return ResponseEntity.status(HttpStatus.OK).body(apiError);
             }
         }
 

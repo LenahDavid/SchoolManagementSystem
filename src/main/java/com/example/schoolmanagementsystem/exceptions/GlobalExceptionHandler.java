@@ -35,6 +35,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.ok(apiError);
     }
 
+@ExceptionHandler(EmailAlreadyExistsException.class)
+public ResponseEntity<Object> handleEmailAlreadyExistsException(EmailAlreadyExistsException exception) {
+    ApiError apiError = new ApiError(400,HttpStatus.BAD_REQUEST, exception.getMessage());
+    return new ResponseEntity<>(apiError, apiError.getStatus());
+}
 
 }
 

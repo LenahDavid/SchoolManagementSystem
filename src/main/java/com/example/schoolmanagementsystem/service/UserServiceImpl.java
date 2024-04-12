@@ -1,12 +1,15 @@
 package com.example.schoolmanagementsystem.service;
 
 import com.example.schoolmanagementsystem.dto.SignUpRequest;
+import com.example.schoolmanagementsystem.entity.Department;
 import com.example.schoolmanagementsystem.entity.PasswordResetToken;
 import com.example.schoolmanagementsystem.entity.Role;
 import com.example.schoolmanagementsystem.entity.User;
+import com.example.schoolmanagementsystem.exceptions.EmailAlreadyExistsException;
 import com.example.schoolmanagementsystem.exceptions.PasswordCheckingException;
 import com.example.schoolmanagementsystem.exceptions.PasswordDoesnotMatchException;
 import com.example.schoolmanagementsystem.exceptions.UserNotFoundException;
+import com.example.schoolmanagementsystem.repository.DepartmentRepository;
 import com.example.schoolmanagementsystem.repository.PasswordResetTokenRepository;
 import com.example.schoolmanagementsystem.repository.UserRepository;
 
@@ -35,35 +38,55 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EmailSenderService emailSenderService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    @Autowired
+    private final DepartmentRepository departmentRepository;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, DepartmentRepository departmentRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.departmentRepository = departmentRepository;
     }
 
 
     @Override
-    public User signup(SignUpRequest signUpRequest ){
-
+    public User signup(SignUpRequest signUpRequest) {
         // Check if the password meets the requirements
         String password = signUpRequest.getPassword();
         if (!isValidPassword(password)) {
             throw new PasswordCheckingException("Password must be at least 8 characters long, contain at least one uppercase letter, and one special character.");
         }
 
-
         if (!signUpRequest.getPassword().equals(signUpRequest.getConfirmPassword())) {
             throw new PasswordDoesnotMatchException("Password and confirmed password do not match");
         }
 
-        User user= new User();
+        // Check if the email already exists
+        String email = signUpRequest.getEmail();
+        if (userRepository.existsByEmail(email)) {
+            throw new EmailAlreadyExistsException("Email already exists.");
+        }
+
+        User user = new User();
         user.setFirstName(signUpRequest.getFirstName());
         user.setLastName(signUpRequest.getLastName());
-        user.setEmail((signUpRequest.getEmail()));
+        user.setEmail(signUpRequest.getEmail());
         user.setUsername(signUpRequest.getUsername());
         user.setRole(Role.valueOf(signUpRequest.getRole()));
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
-        return  userRepository.save(user);
+        String departmentName = signUpRequest.getDepartmentName();
+        if (departmentName != null && !departmentName.isEmpty()) {
+            Department department = departmentRepository.findByName(departmentName);
+            if (department == null) {
+                // Create department if it doesn't exist
+                department = new Department();
+                department.setName(departmentName);
+                department = departmentRepository.save(department);
+            }
+            user.setDepartment(department);
+        }
+
+        return userRepository.save(user);
     }
 
     // Method to validate password constraints
@@ -141,7 +164,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
     }
 
     @Override
@@ -174,12 +198,15 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public UserDetailsService userDetailsService(){
-        return  new UserDetailsService() {
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsService() {
             @Override
-            public UserDetails loadUserByUsername(String email) {
-                return userRepository.findByEmail(email);
-                        //.orElseThrow(()-> new UsernameNotFoundException("User not found"));
+            public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+                User user = userRepository.findByEmail(email);
+                if (user == null) {
+                    throw new UsernameNotFoundException("User not found");
+                }
+                return user;
             }
         };
     }

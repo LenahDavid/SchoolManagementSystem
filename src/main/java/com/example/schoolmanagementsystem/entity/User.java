@@ -22,7 +22,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "students")
+@Table(name = "school_users")
 public class User implements UserDetails {
 
 
@@ -30,13 +30,13 @@ public class User implements UserDetails {
     private static final long serialVersionUID = -3546862197939974800L;
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "student_id")
+    @Column(name = "user_id")
     private Long id;
     @Column(name = "first_name")
     private String FirstName;
     @Column(name = "last_name")
     private String LastName;
-    @Column(name = "email")
+    @Column(name = "email",unique = true)
     private String email;
     @Column(name = "username")
     private String username;
@@ -47,7 +47,10 @@ public class User implements UserDetails {
     private Role role;
 
 
-    // Other methods...
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
 
     // RoleSerializer as a static nested class
     public static class RoleSerializer extends StdSerializer<Role> {
