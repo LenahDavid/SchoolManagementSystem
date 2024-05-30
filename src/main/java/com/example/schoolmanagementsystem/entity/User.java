@@ -38,6 +38,8 @@ public class User implements UserDetails {
     private String LastName;
     @Column(name = "email",unique = true)
     private String email;
+    @Column(name = "phone_number",unique = true)
+    private String phoneNumber;
     @Column(name = "username")
     private String username;
     @Column(name = "password")
@@ -50,6 +52,7 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
+
 
 
     // RoleSerializer as a static nested class

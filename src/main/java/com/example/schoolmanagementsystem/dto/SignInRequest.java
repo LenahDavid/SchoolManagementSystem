@@ -8,5 +8,11 @@ public class SignInRequest {
     private String usernameOrEmail;
     private String password;
 
-
+    @Override
+    public String toString() {
+        return "SignInRequest{" +
+                "usernameOrEmail='" + usernameOrEmail + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
 }

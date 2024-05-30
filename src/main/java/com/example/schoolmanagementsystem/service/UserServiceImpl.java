@@ -1,17 +1,12 @@
 package com.example.schoolmanagementsystem.service;
 
 import com.example.schoolmanagementsystem.dto.SignUpRequest;
-import com.example.schoolmanagementsystem.entity.Department;
-import com.example.schoolmanagementsystem.entity.PasswordResetToken;
-import com.example.schoolmanagementsystem.entity.Role;
-import com.example.schoolmanagementsystem.entity.User;
+import com.example.schoolmanagementsystem.entity.*;
 import com.example.schoolmanagementsystem.exceptions.EmailAlreadyExistsException;
 import com.example.schoolmanagementsystem.exceptions.PasswordCheckingException;
 import com.example.schoolmanagementsystem.exceptions.PasswordDoesnotMatchException;
 import com.example.schoolmanagementsystem.exceptions.UserNotFoundException;
-import com.example.schoolmanagementsystem.repository.DepartmentRepository;
-import com.example.schoolmanagementsystem.repository.PasswordResetTokenRepository;
-import com.example.schoolmanagementsystem.repository.UserRepository;
+import com.example.schoolmanagementsystem.repository.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,11 +35,18 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private final DepartmentRepository departmentRepository;
+    @Autowired
+    private final StudentRepository studentRepository;
+    @Autowired
+    private final TeacherRepository teacherRepository;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, DepartmentRepository departmentRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, DepartmentRepository departmentRepository,
+                           StudentRepository studentRepository,TeacherRepository teacherRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.departmentRepository = departmentRepository;
+        this.studentRepository = studentRepository;
+        this.teacherRepository = teacherRepository;
     }
 
 
@@ -72,6 +74,7 @@ public class UserServiceImpl implements UserService {
         user.setEmail(signUpRequest.getEmail());
         user.setUsername(signUpRequest.getUsername());
         user.setRole(Role.valueOf(signUpRequest.getRole()));
+        user.setPhoneNumber(signUpRequest.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
         String departmentName = signUpRequest.getDepartmentName();
@@ -86,7 +89,22 @@ public class UserServiceImpl implements UserService {
             user.setDepartment(department);
         }
 
-        return userRepository.save(user);
+        user = userRepository.save(user);
+
+        // Create and save the corresponding Student entity
+        if (signUpRequest.getRole().equals("STUDENT")) {
+            Student student = new Student();
+            student.setUser(user);
+            studentRepository.save(student);
+        }
+
+        if(signUpRequest.getRole().equals("TEACHER")){
+            Teacher teacher = new Teacher();
+            teacher.setUser(user);
+            teacherRepository.save(teacher);
+        }
+
+        return user;
     }
 
     // Method to validate password constraints
@@ -108,22 +126,27 @@ public class UserServiceImpl implements UserService {
 
         return true;
     }
-    @Override
     public User signin(String usernameOrEmail, String password) {
-        // Try to find the user by email
+        System.out.println("Attempting to find user by email: " + usernameOrEmail);
         User user = userRepository.findByEmail(usernameOrEmail);
 
-        // If user not found by email, try to find by username
         if (user == null) {
+            System.out.println("User not found by email, attempting to find by username: " + usernameOrEmail);
             user = userRepository.findByUsername(usernameOrEmail);
         }
 
-        // Check if the user exists and the password is correct
-        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-            return user;
+        if (user != null) {
+            System.out.println("User found: " + user);
+            if (passwordEncoder.matches(password, user.getPassword())) {
+                return user;
+            } else {
+                System.err.println("Password does not match for: " + usernameOrEmail);
+            }
+        } else {
+            System.err.println("No user found for: " + usernameOrEmail);
         }
 
-        return null; // Invalid credentials
+        return null;
     }
 
     @Override

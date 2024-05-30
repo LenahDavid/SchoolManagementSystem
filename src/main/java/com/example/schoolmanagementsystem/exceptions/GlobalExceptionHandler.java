@@ -40,6 +40,11 @@ public ResponseEntity<Object> handleEmailAlreadyExistsException(EmailAlreadyExis
     ApiError apiError = new ApiError(400,HttpStatus.BAD_REQUEST, exception.getMessage());
     return new ResponseEntity<>(apiError, apiError.getStatus());
 }
+@ExceptionHandler(SubjectNotFoundException.class)
+public ResponseEntity<Object> handleSubjectNotFoundException(SubjectNotFoundException exception) {
+    ApiError apiError = new ApiError(404,HttpStatus.NOT_FOUND, exception.getMessage());
+    return new ResponseEntity<>(apiError, apiError.getStatus());
+}
 
 }
 
